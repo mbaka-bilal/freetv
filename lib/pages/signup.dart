@@ -19,6 +19,12 @@ class _SignupState extends State<Signup> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        automaticallyImplyLeading: true,
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        // leading: Icon(Icons.arrow_back,color: Colors.white,),
+      ),
       body: SafeArea(
         child: Stack(
           children: [

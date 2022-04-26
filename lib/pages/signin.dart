@@ -19,6 +19,7 @@ class _SigninState extends State<Signin> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+
       body: SafeArea(
         child: Stack(
           children: [
@@ -114,7 +115,7 @@ class _SigninState extends State<Signin> {
                           width: MediaQuery.of(context).size.width,
                           height: 50,
                           child: ElevatedButton(
-                            onPressed: null,
+                            onPressed: () => Navigator.of(context).pushNamed("/home"),
                             child: Text(
                               "Login",
                               style: Theme.of(context).textTheme.bodyText1,
