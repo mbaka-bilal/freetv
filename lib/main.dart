@@ -26,7 +26,14 @@ class MyApp extends StatelessWidget {
             fontWeight: FontWeight.bold,
             fontSize: 20,
             fontFamily: "Rajdhani",
-          )),
+          ),
+            bodyText2: TextStyle(
+              // fontSize: 15,
+              fontFamily: "Rajdhani"
+            )
+
+          ),
+
           elevatedButtonTheme: ElevatedButtonThemeData(
               style: ButtonStyle(
             backgroundColor: MaterialStateProperty.all(Color(0xFF0B314C)),

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../pages/latest_movies.dart';
+import '../pages/categories.dart';
+
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
 
@@ -9,6 +12,18 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   int currentPageIndex = 0; //which page are we displaying
+
+  Widget displayPage(int index) {
+    //select which content to display
+    if (index == 0){
+      return LatestMovies();
+    }else if (index == 1){
+      return Categories();
+    }
+    else{
+      return Container();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -20,8 +35,8 @@ class _HomeState extends State<Home> {
         backgroundColor: Colors.transparent,
         leading: const Icon(Icons.menu),
         actions: [
-          IconButton(onPressed: null, icon: Icon(Icons.search)),
-          IconButton(onPressed: null,icon: Icon(Icons.notifications_outlined))
+          const IconButton(onPressed: null, icon: Icon(Icons.search)),
+          const IconButton(onPressed: null,icon: Icon(Icons.notifications_outlined))
 
 
         ],
@@ -34,10 +49,10 @@ class _HomeState extends State<Home> {
         },
         type: BottomNavigationBarType.fixed,
         currentIndex: currentPageIndex,
-        selectedLabelStyle: TextStyle(
+        selectedLabelStyle: const TextStyle(
           fontSize: 0
         ),
-        unselectedLabelStyle: TextStyle(
+        unselectedLabelStyle: const TextStyle(
           fontSize: 0
         ),
         items: [
@@ -46,14 +61,14 @@ class _HomeState extends State<Home> {
       width: 40,
         height: 40,
         decoration: BoxDecoration(
-          color: Color(0xFF155672),
+          color: const Color(0xFF155672),
 
             borderRadius: BorderRadius.circular(8)
 
         ),
-        child: Icon(Icons.home),
+        child: const Icon(Icons.home),
       ),
-              icon: Icon(Icons.home),
+              icon: const Icon(Icons.home),
           label: ""
           ),
 
@@ -62,14 +77,14 @@ class _HomeState extends State<Home> {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                    color: Color(0xFF155672),
+                    color: const Color(0xFF155672),
 
                     borderRadius: BorderRadius.circular(8)
 
                 ),
-                child: Icon(Icons.category),
+                child: const Icon(Icons.category),
               ),
-              icon: Icon(Icons.category),
+              icon: const Icon(Icons.category),
               label: ""
           ),
           BottomNavigationBarItem(
@@ -77,14 +92,14 @@ class _HomeState extends State<Home> {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                    color: Color(0xFF155672),
+                    color: const Color(0xFF155672),
 
                     borderRadius: BorderRadius.circular(8)
 
                 ),
-                child: Icon(Icons.favorite),
+                child: const Icon(Icons.favorite),
               ),
-              icon: Icon(Icons.favorite),
+              icon: const Icon(Icons.favorite),
               label: ""
           ),
           BottomNavigationBarItem(
@@ -92,146 +107,18 @@ class _HomeState extends State<Home> {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                    color: Color(0xFF155672),
+                    color: const Color(0xFF155672),
 
                     borderRadius: BorderRadius.circular(8)
 
                 ),
-                child: Icon(Icons.person),
+                child: const Icon(Icons.person),
               ),
-              icon: Icon(Icons.person),
+              icon: const Icon(Icons.person),
               label: ""
           ),
         ],
       ),
-      body: CustomScrollView(
-        scrollDirection: Axis.vertical,
-        slivers: [
-          SliverFillRemaining(
-            hasScrollBody: false,
-            child: Container(
-
-              child: Padding(
-                padding: const EdgeInsets.only(top: 20),
-                child: Column(
-                  // mainAxisSize: MainAxisSize.max,
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(left: 25.0),
-                      child: Column(
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text("High rated",style: Theme.of(context).textTheme.bodyText1,),
-                              Padding(
-                                padding: const EdgeInsets.only(right: 15.0),
-                                child: Icon(Icons.arrow_forward_ios),
-                              ),
-                            ],
-                          ),
-                          SizedBox(
-                            height: 20,
-                          ),
-                          Container(
-
-                            height: 150,
-                            child: ListView.separated(
-                                scrollDirection: Axis.horizontal,
-                                itemBuilder: (index,ctx) {
-                                  return Container(
-                                    width: 100,
-                                    height: 100,
-                                    color: Colors.white,
-                                  );
-                                }, separatorBuilder: (index,ctx) => SizedBox(
-                              width: 10,
-                            ), itemCount: 10),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    Padding(
-                      padding: const EdgeInsets.only(left: 25.0),
-                      child: Column(
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text("Latest",style: Theme.of(context).textTheme.bodyText1,),
-                              Padding(
-                                padding: const EdgeInsets.only(right: 15.0),
-                                child: Icon(Icons.arrow_forward_ios),
-                              ),
-                            ],
-                          ),
-                          SizedBox(
-                            height: 20,
-                          ),
-                          Container(
-
-                            height: 150,
-                            child: ListView.separated(
-                                scrollDirection: Axis.horizontal,
-                                itemBuilder: (index,ctx) {
-                                  return Container(
-                                    width: 100,
-                                    height: 100,
-                                    color: Colors.white,
-                                  );
-                                }, separatorBuilder: (index,ctx) => SizedBox(
-                              width: 10,
-                            ), itemCount: 10),
-                          ),
-                        ],
-                      ),
-                    ),
-                    // SizedBox(height: 20,),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 25.0),
-                      child: Column(
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text("Most Popular",style: Theme.of(context).textTheme.bodyText1,),
-                              Padding(
-                                padding: const EdgeInsets.only(right: 15.0),
-                                child: Icon(Icons.arrow_forward_ios),
-                              ),
-                            ],
-                          ),
-                          SizedBox(
-                            height: 20,
-                          ),
-                          Container(
-                            height: 150,
-                            child: ListView.separated(
-                                scrollDirection: Axis.horizontal,
-                                itemBuilder: (index,ctx) {
-                                  return Container(
-                                    width: 100,
-                                    height: 100,
-                                    color: Colors.white,
-                                  );
-                                }, separatorBuilder: (index,ctx) => SizedBox(
-                              width: 10,
-                            ), itemCount: 10),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                  ],
-                ),
-              ),
-            ),
-          )
-        ],
-
-      ),
-    );
+      body: displayPage(currentPageIndex));
   }
 }
