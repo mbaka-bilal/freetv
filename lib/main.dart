@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../pages/signin.dart';
 import '../pages/signup.dart';
 import '../pages/home.dart';
+import '../pages/movieinfo.dart';
 
 void main() {
   runApp(const MyApp());
@@ -42,6 +43,7 @@ class MyApp extends StatelessWidget {
       routes: {
         "/signup":(ctx)=>Signup(),
         "/home" : (ctx) => Home(),
+        "/movieinfo" : (ctx) => MovieInfo(),
       },
     );
   }

@@ -46,10 +46,16 @@ class _LatestMoviesState extends State<LatestMovies> {
                           child: ListView.separated(
                               scrollDirection: Axis.horizontal,
                               itemBuilder: (index,ctx) {
-                                return Container(
-                                  width: 100,
-                                  height: 100,
-                                  color: Colors.white,
+                                return GestureDetector(
+                                  onTap: () {
+                                    print ("Tapped info");
+                                    Navigator.of(context).pushNamed("/movieinfo");
+                                  },
+                                  child: Container(
+                                    width: 100,
+                                    height: 100,
+                                    color: Colors.white,
+                                  ),
                                 );
                               }, separatorBuilder: (index,ctx) => const SizedBox(
                             width: 10,
