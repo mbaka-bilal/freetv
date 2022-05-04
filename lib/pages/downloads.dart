@@ -85,7 +85,7 @@ class _DownloadsState extends State<Downloads> {
 
 class ItemsCard extends StatefulWidget {
   final bool isDelete;
-
+  //each row item
   const ItemsCard({Key? key,required this.isDelete}) : super(key: key);
 
   @override
