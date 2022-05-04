@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
+
 import '../pages/latest_movies.dart';
 import '../pages/categories.dart';
+import '../pages/downloads.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
@@ -19,6 +21,8 @@ class _HomeState extends State<Home> {
       return LatestMovies();
     }else if (index == 1){
       return Categories();
+    }else if (index == 2){
+      return Downloads();
     }
     else{
       return Container();
