@@ -13,14 +13,14 @@ class _MovieInfoState extends State<MovieInfo> {
     final double width = MediaQuery.of(context).size.width;
     final double height = MediaQuery.of(context).size.height;
 
-    Widget rateBottomSheet() {
-      return Column(
-        children: [
-          Text("Rate this movie"),
-
-        ],
-      );
-    }
+    // Widget rateBottomSheet() {
+    //   return Column(
+    //     children: [
+    //       Text("Rate this movie"),
+    //       RatingsRow(),
+    //     ],
+    //   );
+    // }
 
 
     return Scaffold(
@@ -48,7 +48,7 @@ class _MovieInfoState extends State<MovieInfo> {
                       backgroundColor: Colors.white,
                       child: IconButton(
                         onPressed: () => Navigator.of(context).pop(),
-                        icon: Icon(Icons.arrow_back),
+                        icon: const Icon(Icons.arrow_back),
                       ),
                     ),
                   ),
@@ -71,22 +71,22 @@ class _MovieInfoState extends State<MovieInfo> {
               ],
             ),
           ),
-          SizedBox(
+          const SizedBox(
             height: 20,
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              CircleAvatar(
+              const CircleAvatar(
                 backgroundColor: Colors.blue,
                 radius: 30,
                 child: IconButton(
                   onPressed: null,
 
-                  icon: Icon(Icons.favorite,size: 30,color: Colors.white,),
+                  icon: const Icon(Icons.favorite,size: 30,color: Colors.white,),
                 ),
               ),
-              SizedBox(
+              const SizedBox(
                 width: 30,
               ),
               CircleAvatar(
@@ -102,8 +102,29 @@ class _MovieInfoState extends State<MovieInfo> {
                         context: context, builder: (ctx) {
                       return Column(
                         mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Text("Rate this movie",style: Theme.of(context).textTheme.bodyText1,),
+                          const SizedBox(
+                            height: 20,
+                          ),
+
+                          const RatingsRow(),
+
+                          const SizedBox(
+                            height: 20,
+                          ),
+                          ElevatedButton(
+                            style: ButtonStyle(
+                              backgroundColor: MaterialStateProperty.all(Colors.blue),
+                              fixedSize: MaterialStateProperty.all(const Size(300,50)),
+                              shape: MaterialStateProperty.all(RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20)
+                              ))
+                            ),
+                            onPressed: null,
+                            child: Text("Submit",style: Theme.of(context).textTheme.bodyText1,),
+                          )
 
 
                         ],
@@ -111,16 +132,16 @@ class _MovieInfoState extends State<MovieInfo> {
                     } );
                   },
 
-                  icon: Icon(Icons.star,size: 30,color: Colors.white,),
+                  icon: const Icon(Icons.star,size: 30,color: Colors.white,),
                 ),
               ),
-              SizedBox(
+              const SizedBox(
                 width: 30,
               ),
-              CircleAvatar(
+              const CircleAvatar(
                 backgroundColor: Colors.blue,
                 radius: 30,
-                child: IconButton(
+                child: const IconButton(
                   onPressed: null,
 
                   icon: Icon(Icons.download,size: 30,color: Colors.white,),
@@ -128,7 +149,7 @@ class _MovieInfoState extends State<MovieInfo> {
               ),
             ],
           ),
-          SizedBox(
+          const SizedBox(
             height: 20,
           ),
           Padding(
@@ -148,5 +169,62 @@ class _MovieInfoState extends State<MovieInfo> {
   }
 }
 
+class RatingsRow extends StatefulWidget {
+  /* widget to handle draggable ratings */
+  const RatingsRow({Key? key}) : super(key: key);
+
+  @override
+  State<RatingsRow> createState() => _RatingsRowState();
+}
+
+class _RatingsRowState extends State<RatingsRow> {
+  int ratingLevel = 0;
+  int currentPosition = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    // print ("in here");
+    return GestureDetector(
+      onHorizontalDragStart: (dragStartDetails) {
+        /* store the value of the starting position based on local value of the Row */
+        currentPosition = dragStartDetails.localPosition.dx.toInt();
+
+      },
+      onHorizontalDragUpdate: (DragUpdateDetails dragUpdateDetails){
+        // print ("the chage is ${dragUpdateDetails.localPosition.dx.toInt() - currentPosition}");
+        if ((dragUpdateDetails.localPosition.dx.toInt() - currentPosition) > 10 ){
+          /* update the rating level everytime we move 10 positions from the localPosition */
+          currentPosition = dragUpdateDetails.localPosition.dx.toInt();
+          setState(() {
+            ratingLevel++;
+          });
+        }
+        if (( currentPosition - dragUpdateDetails.localPosition.dx.toInt()) > 10 ){
+          /* handle the reverse drag direction */
+          currentPosition = dragUpdateDetails.localPosition.dx.toInt();
+          setState(() {
+            ratingLevel--;
+          });
+        }
+      },
+      onHorizontalDragEnd: (DragEndDetails dragEndDetails){
+        //update the users ratings
+        print ("the rating level is  ${ratingLevel}");
+        currentPosition = 0;
+      },
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: List.generate(5, (index) {
+          if (index < ratingLevel){
+            /* build the ratings */
+            return const Icon(Icons.star,color: Colors.yellow,);
+          }else{
+            return const Icon(Icons.star,color: Colors.white,);
+          }
+        } ),
+      ),
+    );
+  }
+}
 
 
