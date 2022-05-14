@@ -9,6 +9,9 @@
 .history
 .svn/
 
+#theMovieDB api key file
+./lib/helpers/apiKeys.dart
+
 # IntelliJ related
 *.iml
 *.ipr

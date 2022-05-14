@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 
+import '../helpers/apikeys.dart';
+
 class MovieInfo extends StatefulWidget {
   const MovieInfo({Key? key}) : super(key: key);
 
@@ -12,7 +14,7 @@ class MovieInfo extends StatefulWidget {
 
 class _MovieInfoState extends State<MovieInfo> {
   Future<Map<String, dynamic>>? movieInfo;
-  final String apiKey = "b0b4c88b9cc87565d49a0037bcebed00";
+  final String apiKey = myApiKey;
   var arguments;
   String? url;
   int? id = 0;
@@ -355,7 +357,7 @@ class _RatingsRowState extends State<RatingsRow> {
           },
           onHorizontalDragEnd: (DragEndDetails dragEndDetails) {
             //update the users ratings
-            print("the rating level is  ${ratingLevel}");
+            // print("the rating level is  ${ratingLevel}");
             currentPosition = 0;
           },
           child: Row(
@@ -389,26 +391,32 @@ class _RatingsRowState extends State<RatingsRow> {
           onPressed: (done)
               ? () async {
                   /* TODO MOVE THIS rating to another isolate so we can do it irrespective of user closing the bottombar */
-                  setState(() {
+            setState(() {
                     done = false;
                   });
 
+                  //
+
                   //fetch the current rating for the movie
                   var response = await Dio().get(
-                      "https://freetv-7c1f4-default-rtdb.firebaseio.com/ratings/${widget.movieId}/rating.json");
+                      "https://freetv-7c1f4-default-rtdb.firebaseio.com/ratings/${widget.movieId}.json");
                   int current_rating = response.data;
 
-                  //increment the ratings by the number of stars given
-                  await Dio()
-                      .patch(
-                    "https://freetv-7c1f4-default-rtdb.firebaseio.com/ratings/${widget.movieId}.json",
-                    data: json.encode({"rating": ratingLevel + current_rating}),
-                  )
-                      .then((value) {
+                  // print ("the current_rating is $current_rating");
+
+                  // increment the ratings by the number of stars given
+                  try {
+                    await Dio().patch(
+                      "https://freetv-7c1f4-default-rtdb.firebaseio.com/ratings.json",
+                      data: json.encode(
+                          {"${widget.movieId}": ratingLevel + current_rating}),
+                    );
                     setState(() {
                       done = true;
                     });
-                  });
+                  } on DioError catch (e) {
+                    print("the erorr is $e");
+                  }
                 }
               : null,
           child: Text(
