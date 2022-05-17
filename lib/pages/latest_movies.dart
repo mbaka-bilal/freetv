@@ -72,7 +72,7 @@ Future<List<int>> getLatestMovies() async {
     var response = await Dio()
         .get("https://freetv-7c1f4-default-rtdb.firebaseio.com/movies.json");
     result = response.data;
-    print("the result is $result");
+    // print("the result is $result");
 
     result.forEach((key, value) {
       //get all the movies ID that exists;
