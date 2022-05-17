@@ -2,13 +2,18 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
+import 'package:freetv/helpers/get_movie_info.dart';
 
 import '../helpers/movie_info.dart';
 import '../helpers/apikeys.dart';
+import '../helpers/get_movie_info.dart';
 
-Future<List<MovieInfo>> getTopRatedMovies() async {
+Future<List<String>> getTopRatedMovies() async {
+  //get the sorted list of top rated movies
+
   List<String> sortedResult = [];
-  List<MovieInfo> highRatedMoviesInfo = [];
+  // List<MovieInfo> highRatedMoviesInfo = [];
+  // FetchMovieInfo fetchMovieInfo = FetchMovieInfo();
 
   try {
     var response = await Dio()
@@ -26,54 +31,64 @@ Future<List<MovieInfo>> getTopRatedMovies() async {
       List<String> keys =
           List.from(result.keys.where((key) => result[key] == element));
       sortedResult.addAll(keys); //save all the ID of the top rated movies
-      keys.forEach((element) {
+      for (var element in keys) {
         //remove all the checked keys;
         result.removeWhere((key, value) => key == element);
-      });
+      }
     });
 
-    for (var element in sortedResult) {
-      highRatedMoviesInfo.add(MovieInfo(
-          movieId: int.tryParse(element)!,
-          movieImageLink: await getImageLink(int.tryParse(element)!)));
-    }
+    return sortedResult;
+
+    // for (var element in sortedResult) {
+    //   highRatedMoviesInfo.add(MovieInfo(
+    //       movieId: int.tryParse(element)!,
+    //       movieImageLink: await getImageLink(int.tryParse(element)!)));
+    // }
+  } on DioError catch (e) {
+    print("Error getting top rated movies $e");
+    return sortedResult;
   } catch (e) {
-    return highRatedMoviesInfo;
+    print("Non dio error occured fetching top rated movies $e");
+    return sortedResult;
   }
-  return highRatedMoviesInfo;
+  // return sortedResult;
 }
 
-Future<String> getImageLink(int id) async {
-  final String apiKey = myApiKey;
-  var response = await Dio()
-      .get("https://api.themoviedb.org/3/movie/$id/images?api_key=$apiKey");
-  return "http://image.tmdb.org/t/p/w300/${response.data["posters"][0]["file_path"]}";
-}
+// Future<String> getImageLink(int id) async {
+//   final String apiKey = myApiKey;
+//   var response = await Dio()
+//       .get("https://api.themoviedb.org/3/movie/$id/images?api_key=$apiKey");
+//   return "http://image.tmdb.org/t/p/w300/${response.data["posters"][0]["file_path"]}";
+// }
 
-Future<List<MovieInfo>> getLatestMovies() async {
+Future<List<int>> getLatestMovies() async {
   // List<String> moviesPosterUrl = []; //store the list of movie posters url
-  List<dynamic> moviesId = [];
-  List<MovieInfo> latestMovies = [];
+  List<int> moviesId = [];
+  // List<MovieInfo> latestMovies = [];
+  Map<String, dynamic> result = {};
 
   try {
     //get the movies id from firestore realtime db
     var response = await Dio()
         .get("https://freetv-7c1f4-default-rtdb.firebaseio.com/movies.json");
-    moviesId = List.from(response.data);
-    moviesId.removeAt(0); //remove the first item because it is null
+    result = response.data;
+    print("the result is $result");
+
+    result.forEach((key, value) {
+      //get all the movies ID that exists;
+      moviesId.addAll(List.from(value));
+    });
+
     Dio().close();
-    if (moviesId.isNotEmpty) {
-      for (int i = 0; i < moviesId.length; i++) {
-        latestMovies.add(MovieInfo(
-            movieId: moviesId[i],
-            movieImageLink: await getImageLink(moviesId[i])));
-      }
-      Dio().close();
-    }
+
+    return moviesId;
+  } on DioError catch (e) {
+    print("Error fetching all movies $e");
+    return moviesId;
   } catch (e) {
-    return latestMovies;
+    print("Error filling the request $e");
+    return moviesId;
   }
-  return latestMovies;
 }
 
 class LatestMovies extends StatefulWidget {
@@ -101,7 +116,7 @@ class _LatestMoviesState extends State<LatestMovies> {
             hasScrollBody: false,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
+              children: const [
                 HighRatedMoviesWidget(),
                 DisplayBannerAdWidget(),
                 LatestMoviesWidget(),
@@ -170,8 +185,7 @@ class _HighRatedMoviesWidgetState extends State<HighRatedMoviesWidget> {
               builder: (ctx, asyncSnapShot) {
                 if (asyncSnapShot.connectionState == ConnectionState.done) {
                   if (asyncSnapShot.hasData) {
-                    List<MovieInfo> data =
-                        asyncSnapShot.data as List<MovieInfo>;
+                    List<String> data = asyncSnapShot.data as List<String>;
 
                     if (data.isEmpty || data == []) {
                       return Column(
@@ -181,7 +195,7 @@ class _HighRatedMoviesWidgetState extends State<HighRatedMoviesWidget> {
                             "No Internet",
                             style: Theme.of(context).textTheme.bodyText1,
                           ),
-                          SizedBox(
+                          const SizedBox(
                             height: 10,
                           ),
                           ElevatedButton(
@@ -195,28 +209,13 @@ class _HighRatedMoviesWidgetState extends State<HighRatedMoviesWidget> {
                         ],
                       );
                     } else {
-                      return Container(
+                      return SizedBox(
                         height: 150,
                         child: ListView.separated(
                             scrollDirection: Axis.horizontal,
                             itemBuilder: (ctx, index) {
-                              return GestureDetector(
-                                onTap: () {
-                                  Navigator.of(context)
-                                      .pushNamed("/movieinfo", arguments: {
-                                    //pass in the movie id to handle downloads and ratings
-                                    //pass in the imageUrl so we can fetch the image
-                                    "id": data[index].movieId,
-                                    "imageUrl": data[index].movieImageLink,
-                                  });
-                                },
-                                child: SizedBox(
-                                  width: 100,
-                                  height: 100,
-                                  child:
-                                      Image.network(data[index].movieImageLink),
-                                ),
-                              );
+                              return MoviePoster(
+                                  movieId: int.tryParse(data[index])!);
                             },
                             separatorBuilder: (index, ctx) => const SizedBox(
                                   width: 10,
@@ -225,10 +224,10 @@ class _HighRatedMoviesWidgetState extends State<HighRatedMoviesWidget> {
                       );
                     }
                   } else {
-                    return CircularProgressIndicator();
+                    return const CircularProgressIndicator();
                   }
                 } else {
-                  return CircularProgressIndicator();
+                  return const CircularProgressIndicator();
                 }
               }),
         ],
@@ -275,8 +274,7 @@ class _LatestMoviesWidgetState extends State<LatestMoviesWidget> {
               builder: (ctx, asyncSnapShot) {
                 if (asyncSnapShot.connectionState == ConnectionState.done) {
                   if (asyncSnapShot.hasData) {
-                    List<MovieInfo> data =
-                        asyncSnapShot.data as List<MovieInfo>;
+                    List<int> data = asyncSnapShot.data as List<int>;
                     // print("the data is $data");
                     if (data.isEmpty || data == []) {
                       return Column(
@@ -286,7 +284,7 @@ class _LatestMoviesWidgetState extends State<LatestMoviesWidget> {
                             "No Internet",
                             style: Theme.of(context).textTheme.bodyText1,
                           ),
-                          SizedBox(
+                          const SizedBox(
                             height: 10,
                           ),
                           ElevatedButton(
@@ -300,27 +298,13 @@ class _LatestMoviesWidgetState extends State<LatestMoviesWidget> {
                         ],
                       );
                     } else {
-                      return Container(
+                      return SizedBox(
                         height: 150,
                         child: ListView.separated(
                             scrollDirection: Axis.horizontal,
                             itemBuilder: (ctx, index) {
-                              return GestureDetector(
-                                onTap: () {
-                                  Navigator.of(context)
-                                      .pushNamed("/movieinfo", arguments: {
-                                    //pass in the movie id to handle downloads and ratings
-                                    //pass in the imageUrl so we can fetch the image
-                                    "id": data[index].movieId,
-                                    "imageUrl": data[index].movieImageLink,
-                                  });
-                                },
-                                child: SizedBox(
-                                  width: 100,
-                                  height: 100,
-                                  child:
-                                      Image.network(data[index].movieImageLink),
-                                ),
+                              return MoviePoster(
+                                movieId: data[index],
                               );
                             },
                             separatorBuilder: (index, ctx) => const SizedBox(
@@ -330,14 +314,115 @@ class _LatestMoviesWidgetState extends State<LatestMoviesWidget> {
                       );
                     }
                   } else {
-                    return CircularProgressIndicator();
+                    return const CircularProgressIndicator();
                   }
                 } else {
-                  return CircularProgressIndicator();
+                  return const CircularProgressIndicator();
                 }
               })
         ],
       ),
     );
+  }
+}
+
+class MoviePoster extends StatefulWidget {
+  final int movieId;
+
+  const MoviePoster({Key? key, required this.movieId}) : super(key: key);
+
+  @override
+  State<MoviePoster> createState() => _MoviePosterState();
+}
+
+class _MoviePosterState extends State<MoviePoster> {
+  FetchMovieInfo fetchMovieInfo = FetchMovieInfo();
+  late Future<String> imageLink;
+
+  Future<String> getImageLink() async {
+    String image = await fetchMovieInfo.getImageLink(widget.movieId);
+    return image;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    imageLink = getImageLink();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder(
+        future: imageLink,
+        builder: (ctx, asyncSnapShot) {
+          if (asyncSnapShot.connectionState == ConnectionState.done) {
+            if (asyncSnapShot.hasData) {
+              String data = asyncSnapShot.data as String;
+
+              if (data != "") {
+                return GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).pushNamed("/movieinfo", arguments: {
+                      //pass in the movie id to handle downloads and ratings
+                      //pass in the imageUrl so we can fetch the image
+                      "id": widget.movieId,
+                      "imageUrl": data,
+                    });
+                  },
+                  child: SizedBox(
+                    width: 100,
+                    height: 100,
+                    child: Image.network(data),
+                  ),
+                );
+              } else {
+                return Container();
+              }
+            } else if (asyncSnapShot.hasError) {
+              print(
+                  "Error filling the image of the movie ${asyncSnapShot.error}");
+              return SizedBox(
+                width: 10,
+                height: 10,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    CircularProgressIndicator(
+                      strokeWidth: 10,
+                    )
+                  ],
+                ),
+              );
+            } else {
+              return SizedBox(
+                width: 100,
+                height: 100,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    CircularProgressIndicator(
+                      strokeWidth: 1,
+                    )
+                  ],
+                ),
+              );
+            }
+          } else {
+            return SizedBox(
+              width: 100,
+              height: 100,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: const [
+                  CircularProgressIndicator(
+                    strokeWidth: 1,
+                  )
+                ],
+              ),
+            );
+          }
+        });
   }
 }
