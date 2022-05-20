@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:freetv/helpers/get_movie_info.dart';
 
 import '../helpers/movie_info.dart';
@@ -116,9 +117,18 @@ class _LatestMoviesState extends State<LatestMovies> {
             hasScrollBody: false,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: const [
+              children: [
                 HighRatedMoviesWidget(),
                 DisplayBannerAdWidget(),
+                SizedBox(
+                  width: 200,
+                  height: 100,
+                  child: SvgPicture.asset(
+                    'assets/images/themoviedb.svg',
+                    color: Colors.blue,
+                    semanticsLabel: 'TheMovieDb logo',
+                  ),
+                ),
                 LatestMoviesWidget(),
               ],
             ),

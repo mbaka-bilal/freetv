@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import '../helpers/apikeys.dart';
 
@@ -230,28 +231,39 @@ class _MovieInfoState extends State<MovieInfo> {
                         ),
                       ],
                     ),
+                    Center(
+                      child: SizedBox(
+                        width: 200,
+                        height: 50,
+                        child: SvgPicture.asset(
+                          'assets/images/themoviedb.svg',
+                          color: Colors.blue,
+                          semanticsLabel: 'TheMovieDb logo',
+                        ),
+                      ),
+                    ),
                     const SizedBox(
                       height: 20,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 20.0),
+                      child: Text(
+                        "Description",
+                        style: Theme.of(context).textTheme.bodyText1,
+                      ),
                     ),
                     Expanded(
                       child: Padding(
                         padding: const EdgeInsets.only(left: 20.0),
-                        child: SingleChildScrollView(
-                          child: Text(
-                            "Description",
-                            style: Theme.of(context).textTheme.bodyText1,
-                          ),
-                        ),
+                        child: SizedBox(
+                            width: width / 1.2,
+                            child: SingleChildScrollView(
+                              child: Text(
+                                "${data["overview"]}",
+                                style: Theme.of(context).textTheme.bodyText1,
+                              ),
+                            )),
                       ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 20.0),
-                      child: SizedBox(
-                          width: width / 1.2,
-                          child: Text(
-                            "${data["overview"]}",
-                            style: Theme.of(context).textTheme.bodyText1,
-                          )),
                     )
                   ],
                 );
