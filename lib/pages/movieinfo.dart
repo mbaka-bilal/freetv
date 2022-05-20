@@ -163,7 +163,7 @@ class _MovieInfoState extends State<MovieInfo> {
                           radius: 30,
                           child: IconButton(
                             onPressed: null,
-                            icon: const Icon(
+                            icon: Icon(
                               Icons.favorite,
                               size: 30,
                               color: Colors.white,
@@ -219,7 +219,7 @@ class _MovieInfoState extends State<MovieInfo> {
                         const CircleAvatar(
                           backgroundColor: Colors.blue,
                           radius: 30,
-                          child: const IconButton(
+                          child: IconButton(
                             onPressed: null,
                             icon: Icon(
                               Icons.download,
@@ -233,11 +233,15 @@ class _MovieInfoState extends State<MovieInfo> {
                     const SizedBox(
                       height: 20,
                     ),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 20.0),
-                      child: Text(
-                        "Description",
-                        style: Theme.of(context).textTheme.bodyText1,
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.only(left: 20.0),
+                        child: SingleChildScrollView(
+                          child: Text(
+                            "Description",
+                            style: Theme.of(context).textTheme.bodyText1,
+                          ),
+                        ),
                       ),
                     ),
                     Padding(
@@ -390,32 +394,45 @@ class _RatingsRowState extends State<RatingsRow> {
                   borderRadius: BorderRadius.circular(20)))),
           onPressed: (done)
               ? () async {
+                  int currentRating = 0;
+
                   /* TODO MOVE THIS rating to another isolate so we can do it irrespective of user closing the bottombar */
-            setState(() {
+                  setState(() {
                     done = false;
                   });
 
-                  //
-
                   //fetch the current rating for the movie
-                  var response = await Dio().get(
-                      "https://freetv-7c1f4-default-rtdb.firebaseio.com/ratings/${widget.movieId}.json");
-                  int current_rating = response.data;
-
-                  // print ("the current_rating is $current_rating");
-
-                  // increment the ratings by the number of stars given
                   try {
-                    await Dio().patch(
-                      "https://freetv-7c1f4-default-rtdb.firebaseio.com/ratings.json",
-                      data: json.encode(
-                          {"${widget.movieId}": ratingLevel + current_rating}),
-                    );
-                    setState(() {
-                      done = true;
-                    });
+                    var response = await Dio().get(
+                        "https://freetv-7c1f4-default-rtdb.firebaseio.com/ratings/${widget.movieId}.json");
+                    (response.data != null)
+                        ? currentRating = response.data
+                        : null;
+                    // increment the ratings by the number of stars given
+                    try {
+                      await Dio().patch(
+                        "https://freetv-7c1f4-default-rtdb.firebaseio.com/ratings.json",
+                        data: json.encode(
+                            {"${widget.movieId}": ratingLevel + currentRating}),
+                      );
+                      setState(() {
+                        done = true;
+                      });
+                    } on DioError catch (e) {
+                      print("the error is $e");
+                    }
                   } on DioError catch (e) {
-                    print("the erorr is $e");
+                    if (e.message == "Http status error [404]") {
+                      //create the url
+                      var response = await Dio().post(
+                          "https://freetv-7c1f4-default-rtdb.firebaseio.com/ratings.json",
+                          data: json.encode({
+                            "${widget.movieId}": ratingLevel + currentRating
+                          }));
+                      // return;
+                    }
+                  } catch (e) {
+                    print("Unknown error while fetching rating");
                   }
                 }
               : null,
@@ -428,5 +445,3 @@ class _RatingsRowState extends State<RatingsRow> {
     );
   }
 }
-
-
