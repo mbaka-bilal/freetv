@@ -1,10 +1,38 @@
 import 'package:dio/dio.dart';
-import 'package:flutter/material.dart';
 
 import '../helpers/apikeys.dart';
 import '../helpers/movie_info.dart';
 
 class FetchMovieInfo {
+  Future<MovieInfo> getMovieInformation(int id, String apiKey) async {
+    try {
+      var response = await Dio()
+          .get("https://api.themoviedb.org/3/movie/${id}?api_key=$apiKey");
+
+      // print ("the response is ${response.data["release_date"]}");
+
+      return MovieInfo(
+          movieId: id,
+          movieImageLink: await getImageLink(id),
+          movieName: response.data["original_title"],
+          year: int.tryParse(
+              DateTime.parse(response.data["release_date"]).year.toString())!,
+          description: response.data["overview"],
+          adult: (response.data["adult"] as bool) ? 0 : 1);
+    } on DioError catch (e) {
+      if (e.message == "Http status error [404]") {
+        print("error fetching the movie information $e");
+        return MovieInfo(movieId: id, movieImageLink: "");
+      } else {
+        print("error fetching the movie information $e");
+        return MovieInfo(movieId: id, movieImageLink: "");
+      }
+    } catch (e) {
+      print("error fetching the movie information $e");
+      return MovieInfo(movieId: id, movieImageLink: "");
+    }
+  }
+
   Future<String> getImageLink(int id) async {
     final String apiKey = myApiKey;
     var response;
@@ -60,23 +88,6 @@ class FetchMovieInfo {
     return rating;
   }
 
-  // Future<Map<String, dynamic>> getMovieInfo(int id) async {
-  //   Map<String, dynamic> info = {};
-  //
-  //   try {
-  //     var response = await Dio()
-  //         .get("https://api.themoviedb.org/3/movie/${id}?api_key=$apiKey");
-  //     // print ("the response ${response.data["adult"]}");
-  //     info["adult"] = response.data["adult"];
-  //     info["original_title"] = response.data["original_title"];
-  //     info["overview"] = response.data["overview"];
-  //     info["release_date"] = response.data["release_date"];
-  //     // print ("the info is $info");
-  //   } catch (e) {
-  //     print("error $e");
-  //   }
-  //   return info;
-  // }
 
   Future<List<MovieInfo>> getLatestMovies() async {
     // List<String> moviesPosterUrl = []; //store the list of movie posters url

@@ -58,7 +58,7 @@ class _MovieInfoState extends State<MovieInfo> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    print("in depenediceis chage");
+    // print("in depenediceis chage");
     arguments =
         ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
     url = arguments["imageUrl"];
