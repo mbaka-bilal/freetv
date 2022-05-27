@@ -130,7 +130,7 @@ class _MyAppState extends State<MyApp> {
       routes: {
         // "/signup":(ctx)=> Signup(),
         "/home": (ctx) => Home(),
-        "/movieinfo": (ctx) => MovieInfo(),
+        // "/movieinfo": (ctx) => MovieInfo(),
       },
     );
   }

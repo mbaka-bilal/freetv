@@ -27,4 +27,8 @@ class MovieInfo {
       "adult": adult
     };
   }
+
+  String toString() {
+    return "Movieid{movieId: $movieId,title: $movieName,year: $year,description: $description,link: $movieImageLink,adult: $adult}";
+  }
 }

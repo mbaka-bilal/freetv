@@ -1,75 +1,89 @@
 import 'dart:convert';
+import 'dart:io';
+import 'package:freetv/helpers/get_movie_info.dart';
+import 'package:path/path.dart';
 
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:freetv/helpers/database_actions.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:sqflite/sqflite.dart';
 
 import '../helpers/apikeys.dart';
+import '../helpers/movie_info.dart' as information;
 
 class MovieInfo extends StatefulWidget {
-  const MovieInfo({Key? key}) : super(key: key);
+  final int movieId;
+
+  const MovieInfo({Key? key, required this.movieId}) : super(key: key);
 
   @override
   State<MovieInfo> createState() => _MovieInfoState();
 }
 
 class _MovieInfoState extends State<MovieInfo> {
-  Future<Map<String, dynamic>>? movieInfo;
+  // Future<Map<String, dynamic>>? movieInfo;
   final String apiKey = myApiKey;
-  var arguments;
-  String? url;
-  int? id = 0;
+  String? imageLink;
+  DatabaseActions databaseActions = DatabaseActions();
+  FetchMovieInfo fetchMovieInfo = FetchMovieInfo();
+  late Future<information.MovieInfo> getMovie;
+  late Future<bool> isImageLocal;
 
-  Future<Map<String, dynamic>> getMovieInfo(int id) async {
-    Map<String, dynamic> info = {};
+  Future<information.MovieInfo> getMovieInfo(int id) async {
+    information.MovieInfo info = information.MovieInfo(movieId: id);
+
+    if (await imageExistLocally(id.toString())) {
+      final temp = await getApplicationDocumentsDirectory();
+      String path = temp.path;
+      imageLink = '$path/$id.jpeg';
+    } else {
+      imageLink = await fetchMovieInfo.getImageLink(widget.movieId);
+    }
 
     try {
-      var response = await Dio()
-          .get("https://api.themoviedb.org/3/movie/${id}?api_key=$apiKey");
-      // print ("the response ${response.data["adult"]}");
-      info["adult"] = response.data["adult"];
-      info["original_title"] = response.data["original_title"];
-      info["overview"] = response.data["overview"];
-      info["release_date"] = response.data["release_date"];
+      final moviesDatabase =
+          await openDatabase(join(await getDatabasesPath(), "moviesInfo.db"));
+
+      if (await databaseActions.movieExistsInDatabase(moviesDatabase, id)) {
+        print("Movie exist in database");
+        info = await databaseActions.getMovieInformation(
+            moviesDatabase, widget.movieId);
+        return info;
+      } else {
+        info = await fetchMovieInfo.getMovieInformation(widget.movieId, apiKey);
+        return info;
+        // var response = await Dio()
+        //     .get("https://api.themoviedb.org/3/movie/${id}?api_key=$apiKey");
+        // // print ("the response ${response.data["adult"]}");
+        // info["adult"] = response.data["adult"];
+        // info["original_title"] = response.data["original_title"];
+        // info["overview"] = response.data["overview"];
+        // info["release_date"] = response.data["release_date"];
+      }
       // print ("the info is $info");
     } catch (e) {
       print("error $e");
-      await showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text("No Internet"),
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                        context.dependOnInheritedWidgetOfExactType();
-                      },
-                      child: Text("Retry"),
-                    )
-                  ],
-                ),
-              ));
+      return info;
     }
-    return info;
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    // print("in depenediceis chage");
-    arguments =
-        ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
-    url = arguments["imageUrl"];
-    id = arguments["id"];
-    // print ("the id is $id");
-    movieInfo = getMovieInfo(id!);
+  Future<bool> imageExistLocally(String movieId) async {
+    final temp = await getApplicationDocumentsDirectory();
+    String path = temp.path;
+    if (File('$path/$movieId.jpeg').existsSync()) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   @override
   void initState() {
     super.initState();
+    getMovie = getMovieInfo(widget.movieId);
+    isImageLocal = imageExistLocally(widget.movieId.toString());
   }
 
   @override
@@ -80,12 +94,14 @@ class _MovieInfoState extends State<MovieInfo> {
     return Scaffold(
         backgroundColor: Colors.black,
         body: FutureBuilder(
-          future: movieInfo,
+          future: getMovie,
           builder: (ctx, asyncSnapShot) {
             if (asyncSnapShot.connectionState == ConnectionState.done) {
               if (asyncSnapShot.hasData) {
-                Map<String, dynamic> data =
-                    asyncSnapShot.data as Map<String, dynamic>;
+                information.MovieInfo data =
+                    asyncSnapShot.data as information.MovieInfo;
+
+                print("the data is ${data.toString()}");
 
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -94,12 +110,30 @@ class _MovieInfoState extends State<MovieInfo> {
                       height: height / 1.7,
                       child: Stack(
                         children: [
-                          SizedBox(
-                            height: height / 1.7,
-                            width: width,
-                            child: Image.network(
-                              url!,
-                            ),
+                          FutureBuilder(
+                            future: isImageLocal,
+                            builder: (context, asyncSnapShot) {
+                              if (asyncSnapShot.hasData) {
+                                bool isLocal = asyncSnapShot.data as bool;
+
+                                return SizedBox(
+                                    height: height / 1.7,
+                                    width: width,
+                                    child: (isLocal)
+                                        ? Image.file(
+                                            File(imageLink!),
+                                          )
+                                        : Image.network(imageLink!));
+                              } else if (asyncSnapShot.hasError) {
+                                print(
+                                    "Error checking if image exist locally in movieinfo.dart ${asyncSnapShot.error}");
+                                print(
+                                    "Error checking if image exist locally in movieinfo.dart ${asyncSnapShot.error}");
+                                return Container();
+                              } else {
+                                return Container();
+                              }
+                            },
                           ),
                           Align(
                             alignment: Alignment.topLeft,
@@ -130,7 +164,8 @@ class _MovieInfoState extends State<MovieInfo> {
                                       children: [
                                         // Text("${data["original_title"]}",style: Theme.of(context).textTheme.bodyText1,),
                                         Text(
-                                          "Release year: ${DateTime.parse(data["release_date"]).year.toString()}",
+                                          "Release year: ${data.year}",
+                                          // "Release year: ${DateTime.parse(data.year.toString()).year.toString()}",
                                           style: Theme.of(context)
                                               .textTheme
                                               .bodyText1,
@@ -140,12 +175,12 @@ class _MovieInfoState extends State<MovieInfo> {
                                     Padding(
                                       padding:
                                           const EdgeInsets.only(right: 50.0),
-                                      child: (data["adult"])
+                                      child: (data.adult == 0)
                                           ? Text("18+",
                                               style: Theme.of(context)
                                                   .textTheme
                                                   .bodyText1)
-                                          : Text(""),
+                                          : const Text(""),
                                     )
                                   ],
                                 )),
@@ -181,8 +216,10 @@ class _MovieInfoState extends State<MovieInfo> {
                             onPressed: () {
                               showModalBottomSheet(
                                   backgroundColor: Colors.black,
-                                  shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(100)),
+                                  shape: const RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.only(
+                                          topLeft: Radius.circular(100),
+                                          topRight: Radius.circular(100))),
                                   context: context,
                                   builder: (ctx) {
                                     return Column(
@@ -201,7 +238,7 @@ class _MovieInfoState extends State<MovieInfo> {
                                           height: 20,
                                         ),
                                         RatingsRow(
-                                          movieId: id!,
+                                          movieId: widget.movieId,
                                         ),
                                       ],
                                     );
@@ -259,7 +296,7 @@ class _MovieInfoState extends State<MovieInfo> {
                             width: width / 1.2,
                             child: SingleChildScrollView(
                               child: Text(
-                                "${data["overview"]}",
+                                data.description,
                                 style: Theme.of(context).textTheme.bodyText1,
                               ),
                             )),
@@ -287,7 +324,7 @@ class _MovieInfoState extends State<MovieInfo> {
                           ),
                         ),
                       ),
-                      Align(
+                      const Align(
                           alignment: Alignment.center,
                           child: CircularProgressIndicator()),
                     ],
@@ -314,7 +351,7 @@ class _MovieInfoState extends State<MovieInfo> {
                         ),
                       ),
                     ),
-                    Align(
+                    const Align(
                         alignment: Alignment.center,
                         child: CircularProgressIndicator()),
                   ],

@@ -4,6 +4,26 @@ import 'package:sqflite/sqflite.dart';
 import '../helpers/category_info.dart';
 
 class DatabaseActions {
+  Future<MovieInfo> getMovieInformation(Database db, int movieId) async {
+    MovieInfo info = MovieInfo(movieId: movieId);
+    try {
+      List<Map> result =
+          await db.query("info", where: 'movieId = ?', whereArgs: [movieId]);
+      for (var element in result) {
+        info = MovieInfo(
+            movieId: element["movieId"],
+            description: element["description"],
+            movieName: element["title"],
+            year: element["year"],
+            adult: element["adult"]);
+      }
+      return info;
+    } catch (e) {
+      print("Error fetching the specific movie information $e");
+      return info;
+    }
+  }
+
   Future<bool> movieExistsInDatabase(Database db, int id) async {
     //check if record already exists
     try {
@@ -38,10 +58,9 @@ class DatabaseActions {
     return movieInfo;
   }
 
-  void addCategoryToDatabase(
-      Database db, CategoryInfo info, String tableName) async {
+  void addCategoryToDatabase(Database db, CategoryInfo info, String tableName) async {
     var result =
-        await db.rawQuery('SELECT * FROM sqlite_master ORDER BY name;');
+    await db.rawQuery('SELECT * FROM sqlite_master ORDER BY name;');
     print("the list of tables is $result");
     // return;
     // await db.insert(tableName, info.toMap());

@@ -9,7 +9,9 @@ import 'package:path/path.dart';
 import '../helpers/apikeys.dart';
 import '../helpers/get_movie_info.dart';
 import '../helpers/database_actions.dart';
-import '../helpers/movie_info.dart';
+
+// import '../helpers/movie_info.dart';
+import '../pages/movieinfo.dart';
 
 class MoviePoster extends StatefulWidget {
   final int movieId;
@@ -104,12 +106,9 @@ class _MoviePosterState extends State<MoviePoster> {
               if (data != "") {
                 return GestureDetector(
                   onTap: () {
-                    Navigator.of(context).pushNamed("/movieinfo", arguments: {
-                      //pass in the movie id to handle downloads and ratings
-                      //pass in the imageUrl so we can fetch the image
-                      "id": widget.movieId,
-                      "imageUrl": data,
-                    });
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (context) =>
+                            MovieInfo(movieId: widget.movieId)));
                   },
                   child: SizedBox(
                       width: 100,
