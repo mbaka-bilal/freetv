@@ -10,8 +10,8 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
   /* TODO
-    1. Let there be an alimght parameter to check so we can clear all movies record in app and refetch everything,
-      just incase there is an error and we need to change the database.
+    1. Let there be an almighty parameter to check so we can clear all movies record in app and re-fetch everything,
+      just in case there is an error and we need to change the database.
 
    */
 }
@@ -44,12 +44,12 @@ class _MyAppState extends State<MyApp> {
             checkPermission();
           }
         } catch (e) {
-          print("error granting permsission $e");
+          print("error granting permission $e");
           checkPermission();
         }
       }
     } catch (e) {
-      print("error checking premission status $e");
+      print("error checking permission status $e");
       status = false;
     }
     return status;
@@ -108,7 +108,7 @@ class _MyAppState extends State<MyApp> {
                   fontFamily: "Rajdhani")),
           elevatedButtonTheme: ElevatedButtonThemeData(
               style: ButtonStyle(
-            backgroundColor: MaterialStateProperty.all(Color(0xFF0B314C)),
+                backgroundColor: MaterialStateProperty.all(const Color(0xFF0B314C)),
           ))),
       home: FutureBuilder(
           future: checkPermissionfuture,
@@ -116,20 +116,20 @@ class _MyAppState extends State<MyApp> {
             if (snapShot.hasData) {
               bool data = snapShot.data as bool;
               if (data) {
-                return Home();
+                return const Home();
               }
             }
             if (snapShot.hasError) {
-              print("error checing permission ${snapShot.error}");
-              return Text("Error");
+              print("error checking permission ${snapShot.error}");
+              return const Text("Error");
             } else {
-              print("error checing permission ${snapShot.error}");
+              print("error checking permission ${snapShot.error}");
               return Container();
             }
           }),
       routes: {
         // "/signup":(ctx)=> Signup(),
-        "/home": (ctx) => Home(),
+        "/home": (ctx) => const Home(),
         // "/movieinfo": (ctx) => MovieInfo(),
       },
     );

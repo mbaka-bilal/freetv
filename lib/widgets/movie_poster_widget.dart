@@ -57,10 +57,14 @@ class _MoviePosterState extends State<MoviePoster> {
     final temp = await getApplicationDocumentsDirectory();
     String path = temp.path;
     Response<List<int>> response;
-    response = await Dio().get<List<int>>(link,
-        options: Options(responseType: ResponseType.bytes));
-    final file = File('$path/$movieId.jpeg');
-    file.writeAsBytesSync(response.data!); //write the gotten image to disk
+    try {
+      response = await Dio().get<List<int>>(link,
+          options: Options(responseType: ResponseType.bytes));
+      final file = File('$path/$movieId.jpeg');
+      file.writeAsBytesSync(response.data!); //write the gotten image to disk
+    } catch (e) {
+      print("Error downloading the image $e");
+    }
   }
 
   Future<bool> imageExistLocally(String movieId) async {
@@ -81,6 +85,7 @@ class _MoviePosterState extends State<MoviePoster> {
       return '$path/${widget.movieId}.jpeg';
     } else {
       String image = await fetchMovieInfo.getImageLink(widget.movieId);
+      // print ("the link is $image");
       saveMoviePosterLocally(
           image, widget.movieId.toString()); //save the image locally
       return image;
@@ -139,18 +144,7 @@ class _MoviePosterState extends State<MoviePoster> {
             } else if (asyncSnapShot.hasError) {
               print(
                   "Error filling the image of the movie ${asyncSnapShot.error}");
-              return SizedBox(
-                width: 10,
-                height: 10,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    CircularProgressIndicator(
-                      strokeWidth: 10,
-                    )
-                  ],
-                ),
-              );
+              return Container();
             } else {
               return SizedBox(
                 width: 100,

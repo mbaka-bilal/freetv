@@ -58,9 +58,10 @@ class DatabaseActions {
     return movieInfo;
   }
 
-  void addCategoryToDatabase(Database db, CategoryInfo info, String tableName) async {
+  void addCategoryToDatabase(
+      Database db, CategoryInfo info, String tableName) async {
     var result =
-    await db.rawQuery('SELECT * FROM sqlite_master ORDER BY name;');
+        await db.rawQuery('SELECT * FROM sqlite_master ORDER BY name;');
     print("the list of tables is $result");
     // return;
     // await db.insert(tableName, info.toMap());

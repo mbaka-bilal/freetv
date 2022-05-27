@@ -53,7 +53,6 @@ class FetchMovieInfo {
 
   Future<String> getMovieName(int id, String apiKey) async {
     // print ("getting movie name");
-
     String movieName = "";
 
     try {
@@ -61,7 +60,7 @@ class FetchMovieInfo {
           .get("https://api.themoviedb.org/3/movie/$id?api_key=$apiKey");
       movieName = response.data["original_title"];
     } catch (e) {
-      print("error $e");
+      print("error fetching movie information $e");
     }
     return movieName;
   }
@@ -110,6 +109,7 @@ class FetchMovieInfo {
         Dio().close();
       }
     } catch (e) {
+      print("error getting latest movies $e");
       return latestMovies;
     }
     return latestMovies;

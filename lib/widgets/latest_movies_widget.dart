@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:freetv/helpers/movie_info.dart';
 
 import '../widgets/movie_poster_widget.dart';
 import '../pages/latest_movies.dart';
