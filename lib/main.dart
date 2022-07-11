@@ -2,17 +2,29 @@ import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'package:flutter_downloader/flutter_downloader.dart';
 
 import '../pages/movieinfo.dart';
 import '../pages/home.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  await FlutterDownloader.initialize(
+    debug: true,
+    ignoreSsl: true,
+  );
+
   runApp(const MyApp());
   /* TODO
     1. Let there be an almighty parameter to check so we can clear all movies record in app and re-fetch everything,
       just in case there is an error and we need to change the database.
-
+      2. Add scheduled downloads
+      3. Add notifications for new movies added
+      4. Add a reminder to add some movies to the queue
+      5. Add a counter showing the total Size of movies in queue to be downloaded.
+      6. Add a notification to alert the user if a download failed.
+      7. Try a download at most 3 times and at least twice if it fails
    */
 }
 

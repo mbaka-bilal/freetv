@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:freetv/helpers/get_movie_info.dart';
 import 'package:path/path.dart';
 
@@ -254,11 +255,44 @@ class _MovieInfoState extends State<MovieInfo> {
                         const SizedBox(
                           width: 30,
                         ),
-                        const CircleAvatar(
+                         CircleAvatar(
                           backgroundColor: Colors.blue,
                           radius: 30,
                           child: IconButton(
-                            onPressed: null,
+                            onPressed: () async {
+                              //add the movie to the queue
+                              var response = await Dio().get("https://freetv-7c1f4-default-rtdb.firebaseio.com/download_links/${widget.movieId}.json");
+                              String url = response.data;
+                              //TODO add an alert to let the user know incase there is no data connection
+                              //TODO refactor the code to fetch the url and save it locally
+                              // print ("the url is $url");
+
+                              List<DownloadTask>? _moviesList = await FlutterDownloader.loadTasks();
+
+                              for (int i=0;i<_moviesList!.length;i++){
+                                //if movie is already in queue
+                                if (_moviesList[i].url == url){
+                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                      duration: Duration(seconds: 1),
+                                      content: (Text('Movie already in queue'))));
+                                  return;
+                                }
+                              }
+
+                             String? id =  await FlutterDownloader.enqueue(url:
+                                  url,
+                                  savedDir: '/storage/emulated/0/Download',
+                                  showNotification: true,
+                              );
+
+                              // Future.delayed(Duration(seconds: 20));
+                              //
+                              FlutterDownloader.pause(taskId: id!);
+
+
+
+                              // print ('the id is ${id}');
+                            },
                             icon: Icon(
                               Icons.download,
                               size: 30,
